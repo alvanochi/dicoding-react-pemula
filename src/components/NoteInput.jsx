@@ -23,8 +23,9 @@ class NoteInput extends React.Component {
   }
 
   onBodyChangeEventHandler(event) {
-    this.setState({ body: event.target.value });
-    if (this.state.body.length > 10) {
+    const htmlBody = event.target.innerHTML;
+    this.setState({ body: htmlBody });
+    if (htmlBody.length > 10) {
       this.setState({ isBodyError: false });
     }
   }
@@ -32,7 +33,7 @@ class NoteInput extends React.Component {
   onSubmitEventHandler(event) {
     event.preventDefault();
 
-    if (this.state.body.length > 0 && this.state.body.length < 10) {
+    if (this.state.body.length >= 0 && this.state.body.length < 10) {
       this.setState({ isBodyError: true });
       return;
     }
@@ -46,6 +47,7 @@ class NoteInput extends React.Component {
       title: '',
       body: ''
     });
+    // The contentEditable div isn't cleared here natively but it won't matter as we navigate away.
   }
 
   render() {
@@ -53,8 +55,6 @@ class NoteInput extends React.Component {
 
     return (
       <div className="note-input" data-testid="note-input">
-        <h2>Buat catatan</h2>
-
         {this.state.isBodyError && (
           <p className="note-input__feedback--error">
             Isi catatan minimal harus 10 karakter
@@ -80,12 +80,11 @@ class NoteInput extends React.Component {
             required
             data-testid="note-input-title-field"
           />
-          <textarea
+          <div
             className="note-input__body"
-            placeholder="Tuliskan catatanmu di sini ..."
-            value={this.state.body}
-            onChange={this.onBodyChangeEventHandler}
-            required
+            data-placeholder="Tuliskan catatanmu di sini ..."
+            contentEditable
+            onInput={this.onBodyChangeEventHandler}
             data-testid="note-input-body-field"
           />
           <button type="submit" data-testid="note-input-submit-button">

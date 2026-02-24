@@ -1,110 +1,40 @@
 import React from 'react';
-import { getInitialData } from '../utils';
-import NoteInput from './NoteInput';
-import NotesList from './NotesList';
-import NoteSearch from './NoteSearch';
+import { Routes, Route, Link } from 'react-router-dom';
+import HomePage from '../pages/HomePage';
+import ArchivePage from '../pages/ArchivePage';
+import AddPage from '../pages/AddPage';
+import DetailPage from '../pages/DetailPage';
+import NotFoundPage from '../pages/NotFoundPage';
 
-class App extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      notes: getInitialData(),
-      searchKeyword: '',
-    };
-
-    this.onAddNoteHandler = this.onAddNoteHandler.bind(this);
-    this.onDeleteHandler = this.onDeleteHandler.bind(this);
-    this.onArchiveHandler = this.onArchiveHandler.bind(this);
-    this.onSearchHandler = this.onSearchHandler.bind(this);
-  }
-
-  onAddNoteHandler({ title, body }) {
-    this.setState((prevState) => {
-      const newNote = {
-        id: +new Date(),
-        title,
-        body,
-        createdAt: new Date().toISOString(),
-        archived: false,
-      };
-
-      return {
-        notes: [...prevState.notes, newNote]
-      };
-    });
-  }
-
-  onDeleteHandler(id) {
-    this.setState((prevState) => ({
-      notes: prevState.notes.filter(note => note.id !== id)
-    }));
-  }
-
-  onArchiveHandler(id) {
-    this.setState((prevState) => ({
-      notes: prevState.notes.map(note =>
-        note.id === id ? { ...note, archived: !note.archived } : note
-      )
-    }));
-  }
-
-  onSearchHandler(keyword) {
-    this.setState({
-      searchKeyword: keyword
-    });
-  }
-
-  render() {
-    const { notes, searchKeyword } = this.state;
-
-    const filteredNotes = notes.filter((note) =>
-      note.title.toLowerCase().includes(searchKeyword.toLowerCase())
-    );
-
-    filteredNotes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-    const activeNotes = filteredNotes.filter((n) => !n.archived);
-    const archivedNotes = filteredNotes.filter((n) => n.archived);
-
-    return (
-      <div className="note-app" data-testid="note-app">
-        <div className="note-app__header" data-testid="note-app-header">
-          <h1>Notes</h1>
-          <NoteSearch keyword={searchKeyword} onKeywordChange={this.onSearchHandler} />
-        </div>
-        <div className="note-app__body" data-testid="note-app-body">
-          <NoteInput addNote={this.onAddNoteHandler} />
-          <section
-            aria-labelledby="active-notes-title"
-            data-testid="active-notes-section"
-          >
-            <h2 id="active-notes-title">Catatan Aktif</h2>
-            <NotesList
-              notes={activeNotes}
-              onDelete={this.onDeleteHandler}
-              onArchive={this.onArchiveHandler}
-              searchKeyword={searchKeyword}
-              dataTestId="active-notes-list"
-            />
-          </section>
-          <section
-            aria-labelledby="archived-notes-title"
-            data-testid="archived-notes-section"
-          >
-            <h2 id="archived-notes-title">Arsip</h2>
-            <NotesList
-              notes={archivedNotes}
-              onDelete={this.onDeleteHandler}
-              onArchive={this.onArchiveHandler}
-              searchKeyword={searchKeyword}
-              dataTestId="archived-notes-list"
-            />
-          </section>
-        </div>
-      </div>
-    );
-  }
+function App() {
+  return (
+    <div className="note-app" data-testid="note-app">
+      <header className="note-app__header" data-testid="note-app-header">
+        <h1>
+          <Link to="/">Notes</Link>
+        </h1>
+        <nav className="navigation">
+          <ul>
+            <li>
+              <Link to="/archives">Arsip</Link>
+            </li>
+            <li>
+              <Link to="/notes/new">Tambah Baru</Link>
+            </li>
+          </ul>
+        </nav>
+      </header>
+      <main className="note-app__body" data-testid="note-app-body">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/archives" element={<ArchivePage />} />
+          <Route path="/notes/new" element={<AddPage />} />
+          <Route path="/notes/:id" element={<DetailPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </main>
+    </div>
+  );
 }
 
 export default App;

@@ -1,3 +1,4 @@
+import React from 'react';
 import NoteItem from './NoteItem';
 
 function NotesList({ notes, onDelete, onArchive, searchKeyword, dataTestId = 'notes-list' }) {
