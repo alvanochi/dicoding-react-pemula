@@ -1,43 +1,65 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getNote, deleteNote, archiveNote, unarchiveNote, showFormattedDate } from '../utils/local-data';
-import parser from 'html-react-parser';
+import { getNote, deleteNote, archiveNote, unarchiveNote } from '../utils/network-data';
+import { showFormattedDate } from '../utils/local-data';
+import LoadingIndicator from '../components/LoadingIndicator';
+import { useLocale } from '../contexts/LocaleContext';
+import localeData from '../utils/locale-data';
 
 function DetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const note = getNote(id);
+  const [note, setNote] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const { locale } = useLocale();
+  const t = localeData[locale];
 
-  if (!note) {
-    return <p className="detail-page__not-found">Catatan tidak ditemukan</p>;
-  }
+  useEffect(() => {
+    const fetchNote = async () => {
+      setLoading(true);
+      const { error, data } = await getNote(id);
+      if (!error) {
+        setNote(data);
+      }
+      setLoading(false);
+    };
+    fetchNote();
+  }, [id]);
 
-  const onDeleteHandler = () => {
-    deleteNote(id);
+  const onDeleteHandler = async () => {
+    await deleteNote(id);
     navigate('/');
   };
 
-  const onArchiveHandler = () => {
+  const onArchiveHandler = async () => {
     if (note.archived) {
-      unarchiveNote(id);
+      await unarchiveNote(id);
     } else {
-      archiveNote(id);
+      await archiveNote(id);
     }
     navigate('/');
   };
+
+  if (loading) {
+    return <LoadingIndicator />;
+  }
+
+  if (!note) {
+    return <p className="detail-page__not-found">{t.noteNotFound}</p>;
+  }
 
   return (
     <section className="detail-page">
       <h3 className="detail-page__title">{note.title}</h3>
       <p className="detail-page__createdAt">{showFormattedDate(note.createdAt)}</p>
-      <div className="detail-page__body">{parser(note.body)}</div>
+      <div className="detail-page__body">{note.body}</div>
 
       <div className="detail-page__action">
-        <button className="action-button" title="Archive" onClick={onArchiveHandler}>
-          {note.archived ? 'Pindahkan dari Arsip' : 'Arsipkan'}
+        <button className="action-button" onClick={onArchiveHandler}>
+          {note.archived ? t.unarchive : t.archive}
         </button>
-        <button className="action-button" title="Delete" onClick={onDeleteHandler}>
-          Hapus
+        <button className="action-button" onClick={onDeleteHandler}>
+          {t.delete}
         </button>
       </div>
     </section>

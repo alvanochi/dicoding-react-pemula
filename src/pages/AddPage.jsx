@@ -1,19 +1,25 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { addNote } from '../utils/local-data';
+import { addNote } from '../utils/network-data';
 import NoteInput from '../components/NoteInput';
+import { useLocale } from '../contexts/LocaleContext';
+import localeData from '../utils/locale-data';
 
 function AddPage() {
   const navigate = useNavigate();
+  const { locale } = useLocale();
+  const t = localeData[locale];
 
-  const onAddNoteHandler = (note) => {
-    addNote(note);
-    navigate('/');
+  const onAddNoteHandler = async (note) => {
+    const { error } = await addNote(note);
+    if (!error) {
+      navigate('/');
+    }
   };
 
   return (
     <section>
-      <h2>Tambah Catatan Baru</h2>
+      <h2>{t.addNote}</h2>
       <NoteInput addNote={onAddNoteHandler} />
     </section>
   );

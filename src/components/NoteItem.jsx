@@ -1,8 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import parser from 'html-react-parser';
 import { showFormattedDate } from '../utils/local-data';
 import NoteActionButton from './NoteActionButton';
+import { useLocale } from '../contexts/LocaleContext';
+import localeData from '../utils/locale-data';
 
 function highlightText(text, keyword) {
   if (!keyword || !keyword.trim()) return text;
@@ -25,6 +26,9 @@ function highlightText(text, keyword) {
 }
 
 function NoteItem({ note, onDelete, onArchive, searchKeyword }) {
+  const { locale } = useLocale();
+  const t = localeData[locale];
+
   return (
     <div
       className="note-item"
@@ -39,15 +43,15 @@ function NoteItem({ note, onDelete, onArchive, searchKeyword }) {
           {showFormattedDate(note.createdAt)}
         </p>
         <div className="note-item__body" data-testid="note-item-body">
-          {parser(note.body)}
+          {note.body}
         </div>
       </div>
       <div className="note-item__action" data-testid="note-item-action">
         <NoteActionButton variant="delete" onClick={() => onDelete(note.id)}>
-          Delete
+          {t.delete}
         </NoteActionButton>
         <NoteActionButton variant="archive" onClick={() => onArchive(note.id)}>
-          {note.archived ? 'Pindahkan' : 'Arsipkan'}
+          {note.archived ? t.unarchive : t.archive}
         </NoteActionButton>
       </div>
     </div>
